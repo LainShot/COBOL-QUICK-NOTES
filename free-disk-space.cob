@@ -1,0 +1,48 @@
+* This program queries the names and free space of all disks on the system,
+* and displays them using decimal formats and the DEC terminal's graphics features.
+
+IDENTIFICATION DIVISION.
+PROGRAM-ID. DISK-SPACE.
+
+ENVIRONMENT DIVISION.
+
+DATA DIVISION.
+FILE SECTION.
+
+WORKING-STORAGE SECTION.
+01 DISK-NAME PIC X(20).
+01 DISK-SPACE PIC 9(9)V9(9) COMP-3.
+
+PROCEDURE DIVISION.
+
+BEGIN.
+
+DISPLAY "Free space on disks (in GB):"
+
+PERFORM UNTIL DISK-NAME = "STOP"
+  ACCEPT DISK-NAME
+  IF DISK-NAME = "STOP"
+    EXIT PERFORM
+  END-IF
+  PERFORM VMS-CALL
+
+  IF DISK-SPACE < 2
+    DISPLAY "CSI 37;31m"
+  ELSE
+    DISPLAY "CSI 37;32m"
+  END-IF
+
+  DISPLAY DISK-NAME ": "
+    USING "999V999G999D99"
+    DISK-SPACE " GB"
+  DISPLAY "CSI 0m"
+END-PERFORM
+
+GOBACK.
+
+VMS-CALL.
+  EXEC SQL
+    SELECT NAME, (FREEBLOCKS * 512) / (1024 * 1024 * 1024)
+    INTO :DISK-NAME, :DISK-SPACE
+    FROM SYS$DISK
+  END-EXEC.
