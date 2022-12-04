@@ -1,0 +1,43 @@
+IDENTIFICATION DIVISION.
+PROGRAM-ID. USER-AUTHORIZATION.
+
+* This program checks if the currently logged-in user is in a text file called
+* "users.dat", and displays a message depending on whether the user is found in
+* the file or not.
+*
+* This is for OPENVMS only.
+
+ENVIRONMENT DIVISION.
+
+INPUT-OUTPUT SECTION.
+FILE-CONTROL.
+   SELECT INFILE ASSIGN TO "users.dat"
+   ORGANIZATION IS LINE SEQUENTIAL.
+
+DATA DIVISION.
+FILE SECTION.
+FD INFILE.
+   01 INPUT-RECORD.
+      02 INPUT-LINE PIC X(8).
+
+WORKING-STORAGE SECTION.
+   01 USER-NAME PIC X(8).
+   01 USER-FLAG PIC X(1).
+
+PROCEDURE DIVISION.
+   INVOKE SYS$GETJPI "", "UAI", USER-NAME, USER-FLAG.
+   IF USER-FLAG NOT = "Y"
+      DISPLAY "ERROR: UNABLE TO RETRIEVE USER INFORMATION"
+      STOP RUN
+   END-IF
+   PERFORM UNTIL EOF(INFILE)
+      READ INFILE
+         AT END MOVE "Y" TO END-OF-FILE
+         NOT AT END
+            IF USER-NAME = INPUT-LINE
+               DISPLAY "OKAY"
+               STOP RUN
+            END-IF
+   END-PERFORM.
+   DISPLAY "YOU ARE NOT AUTHORIZED"
+   STOP RUN.
