@@ -1,2 +1,2 @@
-# COBOL-QUICK-NOTES
-A small repo of small examples of things in cobol. 
+# LEGACY
+A small repo of snippets of my code for openvms COBOL Fortran ect
